@@ -68,6 +68,14 @@ const styles = StyleSheet.create({
   iconContainer: {
     alignItems: 'center',
   },
+  likeButton: {
+    position: 'relative',
+  },
+  likeButtonIcon: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
   statsLabel: {
     color: '#ffff',
     fontSize: 16,

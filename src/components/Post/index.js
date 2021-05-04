@@ -1,11 +1,13 @@
 import React, {useState} from 'react';
 import {
   TouchableWithoutFeedback,
+  TouchableOpacity,
   View,
   Text,
   Image,
   Animated,
   Easing,
+  StyleSheet,
 } from 'react-native';
 import Video from 'react-native-video';
 import styles from './styles';
@@ -15,11 +17,25 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Fontisto from 'react-native-vector-icons/Fontisto';
 import PauseIcon from '../../components/PauseIcon';
 
-const Post = () => {
+const Post = ({post}) => {
   const [isPause, setIsPause] = useState(false);
+
+  const [postData, setPostData] = useState(post);
+
+  const [isLike, setIsLike] = useState(false);
 
   const onPlayPausePress = () => {
     setIsPause(!isPause);
+  };
+
+  const onLikePress = () => {
+    let plusLike;
+    isLike === false ? (plusLike = 1) : (plusLike = -1);
+    setPostData({
+      ...postData,
+      likes: postData.likes + plusLike,
+    });
+    setIsLike(!isLike);
   };
 
   const spinValue = new Animated.Value(0);
@@ -40,6 +56,23 @@ const Post = () => {
     outputRange: ['0deg', '360deg'],
   });
 
+  const likedValue = new Animated.Value(0);
+
+  Animated.spring(likedValue, {
+    toValue: 1,
+    useNativeDriver: true,
+  }).start();
+
+  const scaleIn = likedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const scaleOut = likedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+
   return (
     <TouchableWithoutFeedback onPress={onPlayPausePress}>
       <View style={styles.container}>
@@ -51,7 +84,7 @@ const Post = () => {
 
         <Video
           source={{
-            uri: 'http://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4',
+            uri: postData.videoUri,
           }}
           style={styles.video}
           paused={isPause}
@@ -66,45 +99,54 @@ const Post = () => {
               <Image
                 style={styles.profilePicture}
                 source={{
-                  uri:
-                    'https://toplist.vn/images/800px/thor-khong-phai-mot-vi-than-407917.jpg',
+                  uri: postData.user.imageUri,
                 }}
               />
             </View>
+
             <View style={styles.iconContainer}>
-              <AntDesign name="heart" size={40} color="white" />
-              <Text style={styles.statsLabel}>123</Text>
+              <TouchableOpacity onPress={onLikePress}>
+                <Animated.View
+                  style={[
+                    StyleSheet.absoluteFillObject,
+                    {transform: [{scale: isLike ? scaleOut : scaleIn}]},
+                  ]}>
+                  <AntDesign name="heart" size={40} color="white" />
+                </Animated.View>
+
+                <Animated.View
+                  style={[{transform: [{scale: isLike ? scaleIn : scaleOut}]}]}>
+                  <AntDesign name="heart" size={40} color="red" />
+                </Animated.View>
+              </TouchableOpacity>
+              <Text style={styles.statsLabel}>{postData.likes}</Text>
             </View>
-            <View style={styles.iconContainer}>
-              <FontAwesome name="commenting" size={40} color="white" />
-              <Text style={styles.statsLabel}>123</Text>
-            </View>
-            <View style={styles.iconContainer}>
-              <Fontisto name="share-a" size={32} color="white" />
-              <Text style={styles.statsLabel}>123</Text>
-            </View>
+            <TouchableOpacity>
+              <View style={styles.iconContainer}>
+                <FontAwesome name="commenting" size={40} color="white" />
+                <Text style={styles.statsLabel}>{postData.comments}</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <View style={styles.iconContainer}>
+                <Fontisto name="share-a" size={32} color="white" />
+                <Text style={styles.statsLabel}>{postData.shares}</Text>
+              </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.bottomContainer}>
             <View>
-              <Text style={styles.handle}>@TuLeThanh</Text>
-              <Text style={styles.description}>My favorite movie</Text>
+              <Text style={styles.handle}>@{postData.user.username}</Text>
+              <Text style={styles.description}>{postData.description}</Text>
               <View style={styles.songRow}>
                 <Entypo name="beamed-note" size={24} color="white" />
-                <Text style={styles.songName}>Nf - The search</Text>
+                <Text style={styles.songName}>{postData.song}</Text>
               </View>
             </View>
-            {/* <Animated.Image
-            style={{...styles.songImage, transform: [{rotate: spin}]}}
-            source={{
-              uri:
-                'https://toplist.vn/images/800px/thor-khong-phai-mot-vi-than-407917.jpg',
-            }}
-          /> */}
             <Animated.Image
               style={{...styles.songImage, transform: [{rotate: spin}]}}
               source={{
-                uri:
-                  'https://toplist.vn/images/800px/thor-khong-phai-mot-vi-than-407917.jpg',
+                uri: postData.user.imageUri,
               }}
             />
           </View>
